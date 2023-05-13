@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import javax.persistence.*;
+import java.util.List;
 import java.util.Optional;
 
 @Entity
@@ -51,6 +52,9 @@ class TestEntity {
 @Repository
 interface TestRepository extends JpaRepository<TestEntity, Integer> {
     Optional<TestEntity> findByColumn1AndColumn2(String column1, String column2);
+
+    // This method will fetch all records from the database.
+    List<TestEntity> findAll();
 }
 
 @Service
@@ -72,5 +76,10 @@ class TestService {
             testEntity.setColumn2(column2);
             testRepository.save(testEntity);
         }
+    }
+
+    // This method fetches all records from the database.
+    public List<TestEntity> getAll() {
+        return testRepository.findAll();
     }
 }
