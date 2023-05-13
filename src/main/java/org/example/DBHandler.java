@@ -1,69 +1,76 @@
 package org.example;
 
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
+import javax.persistence.*;
+import java.util.Optional;
 
-import java.sql.*;
+@Entity
+@Table(name = "test")
+class TestEntity {
 
-public class DBHandler {
-    private static final String DB_URL = "jdbc:postgresql://localhost:5432/test";
-    private static final String USER = "postgres";
-    private static final String PASS = "yamato2202";
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-        public static Connection getConnection() throws SQLException {
-            return DriverManager.getConnection(DB_URL, USER, PASS);
-        }
+    @Column(name = "column1")
+    private String column1;
 
-        public static boolean checkIfExists(JSONObject jsonObject) {
-            // column1 と column2 の値で重複をチェックします
-            String query = "SELECT COUNT(*) FROM test WHERE column1 = ? AND column2 = ?";
-            String column1 = jsonObject.getString("column1");
-            String column2 = jsonObject.getString("column2");
+    @Column(name = "column2")
+    private String column2;
 
-            try (Connection connection = getConnection();
-                 PreparedStatement pstmt = connection.prepareStatement(query)) {
-                pstmt.setString(1, column1);
-                pstmt.setString(2, column2);
-                ResultSet rs = pstmt.executeQuery();
-
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            return false;
-        }
-
-        public static synchronized int getNextId() {
-// データベースに保存されている最大の id の次の値を取得します
-            String query = "SELECT MAX(id) FROM test";
-            try (Connection connection = getConnection();
-                 Statement stmt = connection.createStatement();
-                 ResultSet rs = stmt.executeQuery(query)) {
-                if (rs.next()) {
-                    return rs.getInt(1) + 1;
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            return 1; // テーブルが空の場合、id は 1 から始まります
-        }
-
-        public static void insertJsonObject(JSONObject jsonObject) {
-            // 既存のデータと重複しないことを確認
-            if (!checkIfExists(jsonObject)) {
-                // 重複がない場合は、そのままデータを挿入する
-                String query = "INSERT INTO test (id, column1, column2) VALUES (?, ?, ?)";
-                try (Connection connection = getConnection();
-                     PreparedStatement pstmt = connection.prepareStatement(query)) {
-                    pstmt.setInt(1, getNextId());
-                    pstmt.setString(2, jsonObject.getString("column1"));
-                    pstmt.setString(3, jsonObject.getString("column2"));
-                    pstmt.executeUpdate();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+    // Getters and setters
+    public Integer getId() {
+        return id;
     }
 
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getColumn1() {
+        return column1;
+    }
+
+    public void setColumn1(String column1) {
+        this.column1 = column1;
+    }
+
+    public String getColumn2() {
+        return column2;
+    }
+
+    public void setColumn2(String column2) {
+        this.column2 = column2;
+    }
+}
+
+@Repository
+interface TestRepository extends JpaRepository<TestEntity, Integer> {
+    Optional<TestEntity> findByColumn1AndColumn2(String column1, String column2);
+}
+
+@Service
+class TestService {
+
+    @Autowired
+    private TestRepository testRepository;
+
+    public void insertJsonObject(JSONObject jsonObject) {
+        String column1 = jsonObject.getString("column1");
+        String column2 = jsonObject.getString("column2");
+
+        // Check for existing data
+        Optional<TestEntity> existingData = testRepository.findByColumn1AndColumn2(column1, column2);
+
+        if (existingData.isEmpty()) {
+            TestEntity testEntity = new TestEntity();
+            testEntity.setColumn1(column1);
+            testEntity.setColumn2(column2);
+            testRepository.save(testEntity);
+        }
+    }
+}
