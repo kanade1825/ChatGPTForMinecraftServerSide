@@ -1,6 +1,5 @@
 package org.example;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -8,6 +7,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
+import java.util.List;
 import java.nio.file.*;
 import java.io.*;
 
@@ -27,9 +28,9 @@ class JsonController {
     private TestService testService;
 
     @PostMapping("/json")
-    public String receiveJson(@RequestBody JSONArray jsonArray) {
-        for (int i = 0; i < jsonArray.length(); i++) {
-            JSONObject jsonObject = jsonArray.getJSONObject(i);
+    public String receiveJson(@RequestBody List<Map<String, Object>> jsonArray) {
+        for (Map<String, Object> jsonObjectMap : jsonArray) {
+            JSONObject jsonObject = new JSONObject(jsonObjectMap);
             insertJsonAsync(jsonObject);
         }
         return "SUCCESS";
