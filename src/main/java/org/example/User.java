@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
+
 import javax.persistence.*;
 import java.util.List;
 import java.util.Optional;
@@ -56,6 +57,43 @@ interface TestRepository extends JpaRepository<TestEntity, Integer> {
     // This method will fetch all records from the database.
     List<TestEntity> findAll();
 }
+
+@Entity
+@Table(name = "users")
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    private String username;
+    private String password;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+    // Getters and Setters...
+}
+
 
 @Service
 class TestService {
