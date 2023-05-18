@@ -41,3 +41,4 @@ class TestEntity {
         this.column2 = column2;
     }
 }
+
